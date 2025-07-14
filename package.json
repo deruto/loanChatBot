@@ -1,20 +1,15 @@
 {
-  "name": "whatsapp-loan-bot",
-  "version": "1.0.0",
-  "description": "WhatsApp chatbot for automated loan document collection",
-  "main": "server.js",
+  "name": "whatsapp-loan-bot-serverless",
+  "version": "2.0.0",
+  "description": "WhatsApp loan document collection bot for Vercel serverless",
+  "type": "module",
+  "main": "api/index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "vercel dev",
+    "build": "echo 'No build step required for serverless functions'"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "cors": "^2.8.5",
-    "multer": "^2.0.1",
-    "axios": "^1.10.0",
-    "nodemailer": "^7.0.5",
-    "adm-zip": "^0.5.16",
-    "dotenv": "^17.2.0"
+    "axios": "^1.10.0"
   },
   "engines": {
     "node": "18.x"
