@@ -1,0 +1,9 @@
+node_modules
+.env
+.env.local
+logs/
+data/
+*.log
+.DS_Store
+.replit
+replit.nix
