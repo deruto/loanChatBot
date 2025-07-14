@@ -1,12 +1,7 @@
 // Full WhatsApp bot webhook handler for Vercel serverless
-const path = require('path');
 
-// Import services (using relative paths from project root)
-const WhatsAppService = require('../services/whatsappService');
-const SessionManager = require('../services/sessionManager');
-const DocumentRequirements = require('../services/documentRequirements');
-const FileHandler = require('../services/fileHandler');
-const EmailService = require('../services/emailService');
+// Dynamic imports for serverless compatibility
+let WhatsAppService, SessionManager, DocumentRequirements, FileHandler, EmailService;
 
 // Simple console logger for serverless
 const logger = {
@@ -16,12 +11,30 @@ const logger = {
     debug: (msg, data) => console.log(`[DEBUG] ${msg}`, data || '')
 };
 
-// Initialize services
-const whatsappService = new WhatsAppService();
-const sessionManager = new SessionManager();
-const documentRequirements = new DocumentRequirements();
-const fileHandler = new FileHandler();
-const emailService = new EmailService();
+// Services will be initialized on demand
+let whatsappService, sessionManager, documentRequirements, fileHandler, emailService;
+
+// Initialize services function
+async function initializeServices() {
+    if (!WhatsAppService) {
+        try {
+            WhatsAppService = require('../services/whatsappService');
+            SessionManager = require('../services/sessionManager');
+            DocumentRequirements = require('../services/documentRequirements');
+            FileHandler = require('../services/fileHandler');
+            EmailService = require('../services/emailService');
+            
+            whatsappService = new WhatsAppService();
+            sessionManager = new SessionManager();
+            documentRequirements = new DocumentRequirements();
+            fileHandler = new FileHandler();
+            emailService = new EmailService();
+        } catch (error) {
+            logger.error('Failed to initialize services:', error);
+            throw error;
+        }
+    }
+}
 
 // Webhook controller logic adapted for serverless
 class ServerlessWebhookController {
@@ -335,67 +348,77 @@ ${remaining.length > 0 ? `Next: ${documentRequirements.getDocumentDescription(re
 }
 
 // Main serverless function handler
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     try {
         const { method, query } = req;
         
         if (method === 'GET') {
-            // Webhook verification
+            // Webhook verification - simple and reliable
             const verifyToken = process.env.WEBHOOK_VERIFY_TOKEN || 'loan_bot_verify_token';
             const mode = query['hub.mode'];
             const token = query['hub.verify_token'];
             const challenge = query['hub.challenge'];
             
-            logger.info('Webhook verification attempt', { mode, token });
+            console.log('Webhook verification attempt:', { mode, token, challenge });
             
             if (mode && token) {
                 if (mode === 'subscribe' && token === verifyToken) {
-                    logger.info('Webhook verified successfully');
+                    console.log('✅ Webhook verified successfully');
                     return res.status(200).send(challenge);
                 } else {
-                    logger.warn('Webhook verification failed - token mismatch');
+                    console.log('❌ Webhook verification failed - token mismatch');
                     return res.status(403).json({ error: 'Forbidden' });
                 }
             } else {
-                logger.warn('Webhook verification failed - missing parameters');
+                console.log('❌ Webhook verification failed - missing parameters');
                 return res.status(400).json({ error: 'Bad Request' });
             }
         }
         
         if (method === 'POST') {
             // Handle incoming webhook
-            logger.info('Received webhook POST');
+            console.log('📨 Received webhook POST');
             
-            const body = req.body;
-            
-            // Validate webhook structure
-            if (!body.entry || !Array.isArray(body.entry)) {
-                logger.warn('Invalid webhook structure');
-                return res.status(400).json({ error: 'Invalid webhook structure' });
-            }
-            
-            const webhookController = new ServerlessWebhookController();
-            
-            // Process each entry
-            for (const entry of body.entry) {
-                if (entry.changes) {
-                    for (const change of entry.changes) {
-                        if (change.value && change.value.messages) {
-                            for (const message of change.value.messages) {
-                                await webhookController.processMessage(message);
+            try {
+                // Initialize services only when needed
+                await initializeServices();
+                
+                const body = req.body;
+                console.log('Webhook body:', JSON.stringify(body, null, 2));
+                
+                // Validate webhook structure
+                if (!body.entry || !Array.isArray(body.entry)) {
+                    console.log('❌ Invalid webhook structure');
+                    return res.status(400).json({ error: 'Invalid webhook structure' });
+                }
+                
+                const webhookController = new ServerlessWebhookController();
+                
+                // Process each entry
+                for (const entry of body.entry) {
+                    if (entry.changes) {
+                        for (const change of entry.changes) {
+                            if (change.value && change.value.messages) {
+                                for (const message of change.value.messages) {
+                                    await webhookController.processMessage(message);
+                                }
                             }
                         }
                     }
                 }
+                
+                return res.status(200).json({ status: 'received' });
+            } catch (serviceError) {
+                console.error('Service initialization error:', serviceError);
+                // Fallback: just acknowledge the webhook
+                return res.status(200).json({ status: 'received', error: 'Service unavailable' });
             }
-            
-            return res.status(200).json({ status: 'received' });
         }
         
         return res.status(405).json({ error: 'Method not allowed' });
         
     } catch (error) {
-        logger.error('Webhook handler error:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        console.error('Webhook handler error:', error);
+        return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 }
