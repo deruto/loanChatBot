@@ -18,14 +18,5 @@
   },
   "engines": {
     "node": "18.x"
-  },
-  "keywords": [
-    "whatsapp",
-    "chatbot",
-    "loan",
-    "document-collection",
-    "webhook"
-  ],
-  "author": "",
-  "license": "MIT"
+  }
 }

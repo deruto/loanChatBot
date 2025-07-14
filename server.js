@@ -18,9 +18,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Ensure data directory exists
+// Ensure data directory exists (only in development)
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
 const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) {
+
+if (!isProduction && !fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
     logger.info('Created data directory');
 }

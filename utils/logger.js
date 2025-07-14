@@ -1,8 +1,5 @@
-const fs = require('fs');
-const path = require('path');
-
 /**
- * Simple logging utility with different log levels and file output
+ * Simple logging utility with different log levels (Vercel-compatible)
  */
 class Logger {
     constructor() {
@@ -14,23 +11,7 @@ class Logger {
         };
         
         this.currentLevel = this.logLevels[process.env.LOG_LEVEL] || this.logLevels.info;
-        this.logDir = path.join(__dirname, '..', 'logs');
-        
-        // Create logs directory if it doesn't exist
-        this.ensureLogDirectory();
-        
-        // Log file paths
-        this.logFile = path.join(this.logDir, 'app.log');
-        this.errorFile = path.join(this.logDir, 'error.log');
-    }
-
-    /**
-     * Ensure logs directory exists
-     */
-    ensureLogDirectory() {
-        if (!fs.existsSync(this.logDir)) {
-            fs.mkdirSync(this.logDir, { recursive: true });
-        }
+        this.isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
     }
 
     /**
@@ -58,15 +39,32 @@ class Logger {
     }
 
     /**
-     * Write log to file
+     * Write log to file (disabled in production/Vercel)
      * @param {string} logFile - Path to log file
      * @param {string} message - Formatted log message
      */
     writeToFile(logFile, message) {
+        // Skip file writing in production/Vercel environment
+        if (this.isVercel) {
+            return;
+        }
+        
         try {
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Ensure directory exists only in non-production
+            const logDir = path.dirname(logFile);
+            if (!fs.existsSync(logDir)) {
+                fs.mkdirSync(logDir, { recursive: true });
+            }
+            
             fs.appendFileSync(logFile, message + '\n');
         } catch (error) {
-            console.error('Failed to write to log file:', error);
+            // Silently fail in production
+            if (!this.isVercel) {
+                console.error('Failed to write to log file:', error);
+            }
         }
     }
 
@@ -98,12 +96,18 @@ class Logger {
         
         console.log(`${colorCode}${formattedMessage}${reset}`);
         
-        // File output
-        this.writeToFile(this.logFile, formattedMessage);
-        
-        // Error logs also go to error file
-        if (level === 'error') {
-            this.writeToFile(this.errorFile, formattedMessage);
+        // File output (only in development)
+        if (!this.isVercel) {
+            const path = require('path');
+            const logFile = path.join(__dirname, '..', 'logs', 'app.log');
+            const errorFile = path.join(__dirname, '..', 'logs', 'error.log');
+            
+            this.writeToFile(logFile, formattedMessage);
+            
+            // Error logs also go to error file
+            if (level === 'error') {
+                this.writeToFile(errorFile, formattedMessage);
+            }
         }
     }
 
