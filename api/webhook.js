@@ -224,6 +224,12 @@ Commands:
     async processMediaUpload(session, message) {
         try {
             const currentDoc = sessionManager.getCurrentRequiredDocument(session.phoneNumber);
+
+            if (!currentDoc) {
+                await whatsappService.sendMessage(session.phoneNumber, `✅ All documents uploaded! Type "status" or "restart".`);
+                return;
+            }
+
             
             // In serverless environment, we'll simulate file storage
             const documentInfo = {
