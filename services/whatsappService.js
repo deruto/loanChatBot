@@ -5,7 +5,7 @@ class WhatsAppService {
     constructor() {
         this.token = process.env.WHATSAPP_TOKEN;
         this.phoneId = process.env.WHATSAPP_PHONE_ID;
-        this.baseURL = `https://graph.facebook.com/v18.0/${this.phoneId}`;
+        this.baseURL = `https://graph.facebook.com/v19.0/${this.phoneId}`;
         
         if (!this.token || !this.phoneId) {
             logger.error('WhatsApp credentials not found in environment variables');
@@ -19,36 +19,39 @@ class WhatsAppService {
      * @returns {Promise<Object>} API response
      */
     async sendMessage(to, message) {
-        try {
-            const response = await axios.post(
-                `${this.baseURL}/messages`,
-                {
-                    messaging_product: 'whatsapp',
-                    to: to,
-                    type: 'text',
-                    text: {
-                        body: message
-                    }
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${this.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            logger.info(`Message sent to ${to}: ${message.substring(0, 50)}...`);
-            return response.data;
-        } catch (error) {
-            logger.error('Error sending WhatsApp message:', {
-                error: error.response?.data || error.message,
-                to,
-                message: message.substring(0, 50) + '...'
-            });
-            throw error;
+    const payload = {
+        messaging_product: 'whatsapp',
+        to: to,
+        type: 'text',
+        text: {
+            body: message
         }
+    };
+
+    logger.info(`[SEND] Sending to ${to}: ${message}`);
+
+    try {
+        const response = await axios.post(
+            `${this.baseURL}/messages`,
+            payload,
+            {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        logger.info('[SEND ✅] Message sent successfully', response.data);
+        return response.data;
+    } catch (error) {
+        logger.error('[SEND ❌] Failed to send message', {
+            to,
+            error: error.response?.data || error.message
+        });
+        throw error;
     }
+}
 
     /**
      * Send an interactive button message
@@ -151,7 +154,7 @@ class WhatsAppService {
         try {
             // First, get the media URL
             const mediaResponse = await axios.get(
-                `https://graph.facebook.com/v18.0/${mediaId}`,
+                `https://graph.facebook.com/v19.0/${mediaId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${this.token}`
@@ -217,7 +220,7 @@ class WhatsAppService {
     async getProfile() {
         try {
             const response = await axios.get(
-                `https://graph.facebook.com/v18.0/${this.phoneId}`,
+                `https://graph.facebook.com/v19.0/${this.phoneId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${this.token}`
