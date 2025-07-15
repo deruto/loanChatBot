@@ -5,7 +5,8 @@
   "main": "api/webhook.js",
   "dependencies": {
     "adm-zip": "^0.5.16",
-    "axios": "^1.10.0"
+    "axios": "^1.10.0",
+    "nodemailer": "^7.0.5"
   },
   "engines": {
     "node": "18.x"
