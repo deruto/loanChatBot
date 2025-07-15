@@ -16,24 +16,28 @@ let whatsappService, sessionManager, documentRequirements, fileHandler, emailSer
 
 // Initialize services function
 async function initializeServices() {
-    if (!WhatsAppService) {
-        try {
-            WhatsAppService = require('../services/whatsappService');
-            SessionManager = require('../services/sessionManager');
-            DocumentRequirements = require('../services/documentRequirements');
-            FileHandler = require('../services/fileHandler');
-            EmailService = require('../services/emailService');
-            
-            whatsappService = new WhatsAppService();
-            sessionManager = new SessionManager();
-            documentRequirements = new DocumentRequirements();
-            fileHandler = new FileHandler();
-            emailService = new EmailService();
-        } catch (error) {
-            logger.error('Failed to initialize services:', error);
-            throw error;
-        }
+    if (!whatsappService || !sessionManager || !documentRequirements || !fileHandler || !emailService) {
+        logger.info('Initializing services...');
+    try {
+        const WhatsAppServiceClass = require('../services/whatsappService');
+        const SessionManagerClass = require('../services/sessionManager');
+        const DocumentRequirementsClass = require('../services/documentRequirements');
+        const FileHandlerClass = require('../services/fileHandler');
+        const EmailServiceClass = require('../services/emailService');
+
+        whatsappService = new WhatsAppServiceClass();
+        sessionManager = new SessionManagerClass();
+        documentRequirements = new DocumentRequirementsClass();
+        fileHandler = new FileHandlerClass();
+        emailService = new EmailServiceClass();
+
+        logger.info('✅ All services initialized.');
+    } catch (error) {
+        logger.error('❌ Failed to initialize services:', error);
+        throw error;
     }
+}
+
 }
 
 // Webhook controller logic adapted for serverless

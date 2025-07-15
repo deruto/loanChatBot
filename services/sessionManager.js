@@ -269,4 +269,4 @@ class SessionManager {
     }
 }
 
-module.exports = new SessionManager();
+module.exports = SessionManager;
