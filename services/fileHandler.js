@@ -8,7 +8,11 @@ const logger = require('../utils/logger');
  */
 class FileHandler {
     constructor() {
+<<<<<<< HEAD
         this.baseDataPath = path.join(__dirname, '..', 'data');
+=======
+        this.baseDataPath = path.join('/tmp', 'data');
+>>>>>>> 42db200 (NPM packages added)
         this.ensureDataDirectory();
     }
 
