@@ -8,7 +8,7 @@ const logger = require('../utils/logger');
  */
 class FileHandler {
     constructor() {
-        this.baseDataPath = path.join(__dirname, '..', 'data');
+        this.baseDataPath = path.join('/tmp', 'data'); // Serverless-safe writable folder
         this.ensureDataDirectory();
     }
 
