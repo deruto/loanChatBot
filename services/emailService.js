@@ -365,4 +365,5 @@ Loan Team
     }
 }
 
-module.exports = new EmailService();
+module.exports = EmailService; // 
+

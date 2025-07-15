@@ -366,4 +366,4 @@ class FileHandler {
     }
 }
 
-module.exports = new FileHandler();
+module.exports = FileHandler;
