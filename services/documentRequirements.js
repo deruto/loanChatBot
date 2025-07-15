@@ -364,4 +364,4 @@ class DocumentRequirements {
     }
 }
 
-module.exports = new DocumentRequirements();
+module.exports = DocumentRequirements();
