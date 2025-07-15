@@ -87,7 +87,7 @@ class ServerlessWebhookController {
         sessionManager.setState(session.phoneNumber, 'WAITING_LOAN_TYPE');
         
         const loanTypes = documentRequirements.getAvailableLoanTypes();
-        const options = loanTypes.map((type, index) => `${index + 1}. ${type.name}`).join('\n');
+        const options = loanTypes.map((type, index) => `${index + 1}. ${type.title}`).join('\n');
         
         const welcomeMessage = `🏦 Welcome to the Loan Document Collection Service!
 
@@ -111,7 +111,7 @@ Reply with the number of your choice (1-${loanTypes.length}).`;
         // Try to match by number
         const choice = parseInt(messageText);
         if (choice >= 1 && choice <= loanTypes.length) {
-            selectedLoanType = loanTypes[choice - 1].key;
+            selectedLoanType = loanTypes[choice - 1].id;
         } else {
             // Try to match by name
             selectedLoanType = documentRequirements.normalizeLoanType(messageText);
@@ -122,9 +122,9 @@ Reply with the number of your choice (1-${loanTypes.length}).`;
             sessionManager.setState(session.phoneNumber, 'WAITING_EMPLOYMENT_TYPE');
             
             const employmentTypes = documentRequirements.getAvailableEmploymentTypes();
-            const options = employmentTypes.map((type, index) => `${index + 1}. ${type.name}`).join('\n');
+            const options = employmentTypes.map((type, index) => `${index + 1}. ${type.title}`).join('\n');
             
-            const message = `Great! You selected: ${loanTypes.find(t => t.key === selectedLoanType).name}
+            const message = `Great! You selected: ${loanTypes.find(t => t.id === selectedLoanType).title}
 
 Now, please select your employment type:
 ${options}
@@ -133,7 +133,7 @@ Reply with the number of your choice (1-${employmentTypes.length}).`;
 
             await whatsappService.sendMessage(session.phoneNumber, message);
         } else {
-            const options = loanTypes.map((type, index) => `${index + 1}. ${type.name}`).join('\n');
+            const options = loanTypes.map((type, index) => `${index + 1}. ${type.title}`).join('\n');
             await whatsappService.sendMessage(
                 session.phoneNumber,
                 `Please select a valid loan type by replying with a number:\n${options}`
