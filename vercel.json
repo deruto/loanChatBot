@@ -1,15 +1,22 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
+  "functions": {
+    "api/webhook.js": {
+      "maxDuration": 30
     }
-  ],
+  },
   "routes": [
     {
+      "src": "/webhook",
+      "dest": "/api/webhook.js"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/server.js"
+      "dest": "/public/$1"
     }
   ]
 }
