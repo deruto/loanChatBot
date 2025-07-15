@@ -150,7 +150,7 @@ Reply with the number of your choice (1-${employmentTypes.length}).`;
         // Try to match by number
         const choice = parseInt(messageText);
         if (choice >= 1 && choice <= employmentTypes.length) {
-            selectedEmploymentType = employmentTypes[choice - 1].key;
+            selectedEmploymentType = employmentTypes[choice - 1].id;
         } else {
             // Try to match by name
             selectedEmploymentType = documentRequirements.normalizeEmploymentType(messageText);
@@ -164,10 +164,10 @@ Reply with the number of your choice (1-${employmentTypes.length}).`;
             sessionManager.setRequiredDocuments(session.phoneNumber, requiredDocs);
             sessionManager.setState(session.phoneNumber, 'COLLECTING_DOCUMENTS');
             
-            const empType = employmentTypes.find(t => t.key === selectedEmploymentType);
+            const empType = employmentTypes.find(t => t.id === selectedEmploymentType);
             await whatsappService.sendMessage(
                 session.phoneNumber,
-                `Perfect! Employment type: ${empType.name}
+                `Perfect! Employment type: ${empType.title}
 
 📋 Required documents for your application:
 ${requiredDocs.map((doc, index) => `${index + 1}. ${documentRequirements.getDocumentDescription(doc)}`).join('\n')}
@@ -177,7 +177,7 @@ Let's start collecting your documents. Please send me your first document: **${d
 You can send photos or PDF files. Type "skip" to skip a document or "status" to see your progress.`
             );
         } else {
-            const options = employmentTypes.map((type, index) => `${index + 1}. ${type.name}`).join('\n');
+            const options = employmentTypes.map((type, index) => `${index + 1}. ${type.title}`).join('\n');
             await whatsappService.sendMessage(
                 session.phoneNumber,
                 `Please select a valid employment type by replying with a number:\n${options}`
